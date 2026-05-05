@@ -1,6 +1,6 @@
 Hey, my friend
 
-This is test framework for cosmetics store
+This is test framework for cosmetics store https://weathershopper.pythonanywhere.com/
 This frameworks is based on Playwright + Typescript
 
 What you need to do for beginning:
