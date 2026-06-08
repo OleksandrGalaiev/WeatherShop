@@ -29,7 +29,6 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'],
-        baseURL:'https://weathershopper.pythonanywhere.com/',
         weatherShop:'https://weathershopper.pythonanywhere.com/'
        },
     },
