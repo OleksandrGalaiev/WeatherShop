@@ -1,13 +1,13 @@
 import { Locator, Page } from "playwright";
 import { PriceLevel } from "../interfaces/CosmeticStore";
+import { BasePage } from "./BasePage";
 
-export class ProductsListing{
-    private page: Page
+export class ProductsListing extends BasePage{
     private productCard: Locator
-    private cart: Locator
+    cart: Locator
     
     constructor(page:Page){
-        this.page = page
+        super(page)
         this.productCard = page.locator("//div[contains(@class, 'col-4')]").first()
         this.cart = page.locator("#cart")
     }
@@ -27,6 +27,7 @@ export class ProductsListing{
         })
         await targetProduct.locator.scrollIntoViewIfNeeded({'timeout':500})
         await targetProduct.locator.locator("button").filter({hasText: "Add"}).click()
+        await this.page.waitForTimeout(500)
     }
 
     private async getAllProductsLocators(productName:string){
@@ -51,8 +52,4 @@ export class ProductsListing{
     async getCartStatus(){
         return await this.cart.textContent()
     }
-    async openCart(){
-        await this.cart.click()
-    }
-
 }

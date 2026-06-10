@@ -5,7 +5,7 @@ import { CheckoutPage } from "./CheckoutPage";
 import { Payments } from "../helpers/Payments";
 import { ThankYouPage } from "./ThankYouPage";
 
-export class BaseTest{
+export class Pages{
     private page: Page
     mainPage: MainPage
     productListing: ProductsListing
@@ -20,9 +20,5 @@ export class BaseTest{
         this.checkoutPage = new CheckoutPage(page)
         this.payments = new Payments(page)
         this.thankYouPage = new ThankYouPage(page)
-    }
-
-    async open(url:string){
-        await this.page.goto(url)
     }
 }

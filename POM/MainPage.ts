@@ -1,23 +1,23 @@
 import { Locator, Page } from "@playwright/test"
+import { BasePage } from "./BasePage"
 
 
-export class MainPage{
-    private page: Page
+export class MainPage extends BasePage{
     private temperatureValue: Locator
 
     constructor(page:Page){
-        this.page = page
+        super(page)
         this.temperatureValue = page.locator("#temperature")
     }
 
     async setupTemperatureRoute(temperature: number) {
-        await this.page.route('https://weathershopper.pythonanywhere.com/', async (route) => {
+        await this.page.route('**/weathershopper.pythonanywhere.com{,/}', async (route) => {
             const response = await route.fetch();
             let html = await response.text();
             html = html.replace(
-                /<span id="temperature">.*?<\/span>/,
-                `<span id="temperature">${temperature} &#8451;</span>`
-            );
+            /<span id="temperature">.*?<\/span>/is,
+            `<span id="temperature">${temperature} <sup>&nbsp;°C</sup></span>`
+        );
             await route.fulfill({ response, body: html });
         });
     }
@@ -29,5 +29,10 @@ export class MainPage{
 
     async buyProduct(productName:'moisturizers'|'sunscreens'){
         await this.page.locator(`//button[text()='Buy ${productName}']`).click()
+    }
+
+    async open(url: string): Promise<void> {
+        await super.open(url)
+        await this.temperatureValue.waitFor({state:'visible'})
     }
 }

@@ -16,27 +16,34 @@ for(const{temperature, category, product1,product1PriceLevel, product2, product2
             await app.mainPage.setupTemperatureRoute(temperature)
         })
         await test.step(`Open main page, check preconditions and switch to ${category} screen`, async()=>{
-            await app.open(weatherShop)
-            expect(await app.mainPage.getCurrentTemperature()).toContain(temperature.toString())
+            await app.mainPage.open(weatherShop)
+            expect(await app.mainPage.getCurrentTemperature(), 'Not correct temperature installed').toContain(temperature.toString())
             await app.mainPage.buyProduct(category)
         })
-        await test.step('Adding sevral products to shopping cart and proceed to checkout page',async()=>{
+        await test.step(`Add product ${product1} to card with ${product1PriceLevel} price`,async()=>{
             await app.productListing.addProductToCard(product1, product1PriceLevel)
+        })
+        await test.step(`Add product ${product2} to card with ${product2PriceLevel} price. And oprn card`, async()=>{
             await app.productListing.addProductToCard(product2, product2PriceLevel)
-            expect(await app.productListing.getCartStatus()).not.toEqual('Empty')
-            await app.productListing.openCart()
+            await app.productListing.cart.click()
         })
         await test.step('Checking the visibility of the purchased item and paying by credit card', async ()=>{
-            expect(await app.checkoutPage.getContentOfTable(1)).toBeVisible()
-            expect.soft(await app.checkoutPage.getContentOfTable(2)).toBeVisible()
+            expect(await app.checkoutPage.getContentOfTable(product1), 'Product is not been added to card').toBeVisible()
+            expect.soft(await app.checkoutPage.getContentOfTable(product2), 'Product is not been added to card').toBeVisible()
             await app.checkoutPage.buyViaCreditCard()
-            let status = await app.payments.fillCreditCardForm(
+            let paymentResponse = await app.payments.fillCreditCardForm(
                 fakePerson.email, 
                 process.env.CARD_NUMBER || '',
                 process.env.EXPIRATION_DATE || '',
-                process.env.CVV
+                process.env.CVV || ''
             )
-            expect(status).toEqual(200)
+            expect(await app.payments.getPaymentStatus(paymentResponse), 'Payment is not succesful').toEqual(200)
+            let receivedData = await app.payments.getPaymentResponseData(paymentResponse)
+            expect(receivedData.token).toEqual('token')
+            expect(receivedData.name, 'incorrect user email').toEqual(fakePerson.email)
+            expect(receivedData.funding, 'incorrect type of funding').toEqual('credit')
+
+            
         })
         await test.step("Check Thank you page", async()=>{
             expect(await app.thankYouPage.getTitleText()).toEqual('PAYMENT SUCCESS')
