@@ -1,5 +1,5 @@
 import { Locator, Page } from "@playwright/test"
-import { BasePage } from "./BasePage"
+import { BasePage } from "@POM/BasePage"
 
 
 export class MainPage extends BasePage{
@@ -15,20 +15,20 @@ export class MainPage extends BasePage{
             const response = await route.fetch();
             let html = await response.text();
             html = html.replace(
-            /<span id="temperature">.*?<\/span>/is,
-            `<span id="temperature">${temperature} <sup>&nbsp;°C</sup></span>`
-        );
+                /<script type="text\/javascript">[\s\S]*?<\/script>/i,
+                `<script type="text/javascript">document.getElementById("weather").innerHTML = '<span id="temperature">${temperature} <sup>&nbsp;°C</sup></span>';</script>`
+            );
             await route.fulfill({ response, body: html });
         });
     }
 
-    async getCurrentTemperature(){
-        await this.temperatureValue.waitFor({'state':'visible'})
-        return await this.temperatureValue.textContent()
+    getCurrentTemperature(){
+        return this.temperatureValue
     }
 
     async buyProduct(productName:'moisturizers'|'sunscreens'){
-        await this.page.locator(`//button[text()='Buy ${productName}']`).click()
+        await this.page.getByRole('button',{'name':productName}).click()
+        await this.page.waitForFunction(() => typeof (window as unknown as { addToCart?: unknown }).addToCart === 'function')
     }
 
     async open(url: string): Promise<void> {

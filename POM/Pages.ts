@@ -1,12 +1,13 @@
-import { Page } from "playwright";
-import { MainPage } from "./MainPage";
-import { ProductsListing } from "./ProductListting";
-import { CheckoutPage } from "./CheckoutPage";
-import { Payments } from "../helpers/Payments";
-import { ThankYouPage } from "./ThankYouPage";
+import { Page } from "@playwright/test";
+import { MainPage } from "@POM/MainPage";
+import { ProductsListing } from "@POM/ProductListting";
+import { CheckoutPage } from "@POM/CheckoutPage";
+import { Payments } from "@helpers/Payments";
+import { ThankYouPage } from "@POM/ThankYouPage";
+import { BasePage } from "@POM/BasePage";
 
-export class Pages{
-    private page: Page
+
+export class Pages extends BasePage{
     mainPage: MainPage
     productListing: ProductsListing
     checkoutPage: CheckoutPage
@@ -14,7 +15,7 @@ export class Pages{
     thankYouPage: ThankYouPage
     
     constructor(page: Page){
-        this.page = page
+        super(page)
         this.mainPage = new MainPage(page)
         this.productListing = new ProductsListing(page)
         this.checkoutPage = new CheckoutPage(page)

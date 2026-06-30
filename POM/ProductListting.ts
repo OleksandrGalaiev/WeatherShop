@@ -1,10 +1,10 @@
-import { Locator, Page } from "playwright";
-import { PriceLevel } from "../interfaces/CosmeticStore";
-import { BasePage } from "./BasePage";
+import { Locator, Page } from "@playwright/test";
+import { PriceLevel } from "@interfaces/CosmeticStore";
+import { BasePage } from "@POM/BasePage";
 
 export class ProductsListing extends BasePage{
     private productCard: Locator
-    cart: Locator
+    private cart: Locator
     
     constructor(page:Page){
         super(page)
@@ -13,12 +13,14 @@ export class ProductsListing extends BasePage{
     }
 
     async addProductToCard(productName:string, price:PriceLevel){
-        let allProductsLocators = await this.getAllProductsLocators(productName)
-        let productPrices = await this.getListOfPrices(allProductsLocators)
+        await this.productCard.waitFor({state:'visible'})
+        const allProductsLocators = await this.getAllProductsLocators(productName)
+        
+        const productPrices = await this.getListOfPrices(allProductsLocators)
         if (productPrices.length === 0) {
             throw new Error(`Product with ${productName} component is not found`);
         }
-        let targetProduct = productPrices.reduce((prev, current) => {
+        const targetProduct = productPrices.reduce((prev, current) => {
             if (price === 'min') {
                 return (current.price < prev.price) ? current : prev;
             } else {
@@ -27,29 +29,33 @@ export class ProductsListing extends BasePage{
         })
         await targetProduct.locator.scrollIntoViewIfNeeded({'timeout':500})
         await targetProduct.locator.locator("button").filter({hasText: "Add"}).click()
-        await this.page.waitForTimeout(500)
     }
 
     private async getAllProductsLocators(productName:string){
-        await this.productCard.waitFor({state:'visible'})
-        return await this.page.locator("//div[contains(@class, 'col-4')]",{has: await this.page.locator(`//p[contains(text(), '${productName}')]`)}).all()     
+        return await this.page.locator("//div[contains(@class, 'col-4')]").filter({hasText: productName}).all()
     }
 
     private async getListOfPrices(allProductsLocators:Locator[]){
-        let productData = []
-        for(let productLocator of allProductsLocators){
-            let priceText = await productLocator.locator("p").filter({hasText: "Price"}).textContent()
-            let match = priceText.match(/\d+/)
-            let priceValue = parseInt(match[0], 10)
-            productData.push({
-                locator:productLocator,
-                price: priceValue
-            })
-        }
-        return productData
+        return await Promise.all(allProductsLocators.map(async (locator) => {
+            const priceText = await locator.locator("p").filter({hasText: "Price"}).textContent()
+            const match = priceText!.match(/\d+/)
+            return {
+                locator,
+                price: parseInt(match![0], 10)
+            }
+        }))
     }
 
-    async getCartStatus(){
-        return await this.cart.textContent()
+    getCartStatus(){
+        return this.cart
+    }
+
+    async openShopingBusket(){
+        await this.cart.click()
+    }
+
+    async waitForProductTobeAdded(numberOfItems: number){
+        const busketText = this.page.locator(`//span[text()='${numberOfItems} item(s)']`)
+        await busketText.waitFor({'state':'visible'})
     }
 }

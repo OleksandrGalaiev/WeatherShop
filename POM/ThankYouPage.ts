@@ -1,5 +1,5 @@
-import { Locator, Page } from "playwright";
-import { BasePage } from "./BasePage";
+import { Locator, Page } from "@playwright/test";
+import { BasePage } from "@POM/BasePage";
 
 export class ThankYouPage extends BasePage{
     private headerTitle: Locator
@@ -7,11 +7,11 @@ export class ThankYouPage extends BasePage{
 
     constructor(page: Page){
         super(page)
-        this.headerTitle=page.locator('//h2')
+        this.headerTitle=page.getByRole('heading')
         this.copyright = page.locator('.ws_copyright')
     }
     async getTitleText(){
         await this.copyright.waitFor({state:'visible'})
-        return await this.headerTitle.textContent()
+        return this.headerTitle
     }
 }

@@ -1,5 +1,5 @@
-import { Response, Locator, Page } from "playwright";
-import { BasePage } from "../POM/BasePage";
+import { Response, Locator, Page } from "@playwright/test";
+import { BasePage } from "@POM/BasePage";
 
 
 export class Payments extends BasePage{
@@ -31,12 +31,24 @@ export class Payments extends BasePage{
         return paymentResponse
     }
 
-    async getPaymentStatus(response: Response){
+    getPaymentStatus(response: Response){
         return response.status()
     }
 
+    getPaymentRequestData(response: Response){
+        const postData = response.request().postData() ?? ''
+        const params = new URLSearchParams(postData)
+        return {
+            email: params.get('email') ?? '',
+            cardNumber: params.get('card[number]') ?? '',
+            cardExpMonth: params.get('card[exp_month]') ?? '',
+            cardExpYear: params.get('card[exp_year]') ?? '',
+            cardCvc: params.get('card[cvc]') ?? ''
+        }
+    }
+
     async getPaymentResponseData(response:Response){
-        let data = await response.json()
+        const data = await response.json()
         return {
             token: data.token ?? '',
             funding: data.card?.funding ?? '',

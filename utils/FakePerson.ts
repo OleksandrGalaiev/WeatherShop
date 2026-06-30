@@ -16,7 +16,7 @@ const locales = {
 }
 
 export function getFakeUser(userLocale: Locale):FakeUser{
-    let user = new Faker({locale:locales[userLocale]})
+    const user = new Faker({locale:locales[userLocale]})
     return {
         name: user.person.firstName(),
         lastName: user.person.lastName(),
